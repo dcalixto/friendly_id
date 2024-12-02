@@ -16,7 +16,20 @@ module FriendlyId
       end
     end
 
-    # Define the friendly ID field dynamically with the macro
+    def generate_slug
+      field = self.class.slug_field
+      # Access the title property directly
+      source_value = title.to_s
+      if should_generate_new_friendly_id?(source_value)
+        @previous_slug = @slug
+        self.slug = normalize_friendly_id(source_value)
+        @slug_changed = true
+        @previous_value = source_value
+      end
+    rescue ex : Exception
+      puts "Error generating slug: #{ex.message}"
+    end
+
     macro friendly_id(field)
       @@slug_field = {{field}}
     end
