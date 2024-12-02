@@ -115,7 +115,7 @@ post = Post.new("Hello World!")
 post.slug # => "hello-world"
 ```
 
-Update the Slug Automatically
+The Slug is Update Automatically
 
 ```yaml
 post = Post.new("Hello World!")
@@ -129,6 +129,9 @@ puts post.slug_history # => ["hello-world"]
 ```
 
 With History Tracking
+
+> [!CAUTION]
+> Still with issues need to fix FriendlyId::History
 
 ```yaml
 class Post
