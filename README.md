@@ -12,6 +12,13 @@ dependencies:
     github: dcalixto/friendly_id
 ```
 
+> [!NOTE]
+> Make sure your database table has a slug column:
+
+```yaml
+ALTER TABLE posts ADD COLUMN slug VARCHAR;
+```
+
 2. Run
 
 ```yaml
@@ -33,6 +40,64 @@ config.migration_dir = "db/migrations"
 end
 ```
 
+Update your model's save method to include the `generate_slug` method:
+
+```yaml
+
+class Post
+  include FriendlyId::Slugged
+  friendly_id :title
+
+  # Model-level slug generation
+  def save
+  generate_slug  # Generate the slug before saving
+    @updated_at = Time.utc
+
+    if id
+      @@db.exec <<-SQL, title, slug, body, user_id, created_at, updated_at, id
+        UPDATE posts
+        SET title = ?, slug = ?, body = ?, user_id = ?, created_at = ?, updated_at = ?
+        WHERE id = ?
+      SQL
+    else
+      @@db.exec <<-SQL, title, slug, body, user_id, created_at, updated_at
+        INSERT INTO posts (title, slug, body, user_id, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+      SQL
+    end
+    self
+  end
+end
+
+```
+
+Or Update your controller save method to include the `generate_slug` method:
+
+```yaml
+class PostsController
+  def create(env)
+    title = env.params.body["title"]
+    body = env.params.body["body"]
+    user_id = current_user(env).id
+
+    post = Post.new(
+      title: title,
+      body: body,
+      user_id: user_id
+    )
+
+    # Controller-level slug generation
+    post.generate_slug # Generate the slug before saving
+
+    if post.save
+      env.redirect "/posts/#{post.slug}"
+    else
+      env.redirect "/posts/new"
+    end
+  end
+end
+```
+
 ## Usage
 
 Basic Slugging
@@ -42,7 +107,7 @@ class Post
   include FriendlyId::Slugged
 
   property title : String
- slug_from "title"
+
 
 end
 
@@ -70,7 +135,7 @@ class Post
   include FriendlyId::Slugged
   include FriendlyId::History
 
-  slug_from "title"
+
 
   property title : String
 
@@ -94,7 +159,7 @@ class User
   include FriendlyId::Slugged
 
   property name : String
-  slug_from "name" # Use 'name' field instead of 'title'
+  friendly_id :name  # Use name instead of title for slugs
 
   def initialize(@name); end
 end
@@ -130,7 +195,8 @@ end
 
 ## Features
 
-- Slug generation from model attributes
+- Slug generation from specified fields
+- SEO-friendly URL formatting
 - History tracking of slug changes
 - Custom slug normalization
 - Special character handling
