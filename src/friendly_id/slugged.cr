@@ -17,7 +17,7 @@ module FriendlyId
 
     def generate_slug
       field = self.class.slug_field
-      source_value = (self.responds_to?(field) ? self.@[field] : "") || ""
+      source_value = (self.responds_to?(field.to_s) ? self.as(Object).send(field) : "") || ""
       if should_generate_new_friendly_id?(source_value)
         @previous_slug = @slug
         self.slug = normalize_friendly_id(source_value)
@@ -26,8 +26,7 @@ module FriendlyId
       end
     rescue ex : Exception
       puts "Error generating slug: #{ex.message}"
-    end
-    macro friendly_id(field)
+    end    macro friendly_id(field)
       @@slug_field = {{field}}
     end
 
