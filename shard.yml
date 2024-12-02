@@ -20,4 +20,4 @@ development_dependencies:
   ameba:
     github: crystal-ameba/ameba
 scripts:
-  postinstall: crystal run lib/friendly_id/src/friendly_id/install.cr
+  postinstall: crystal run src/friendly_id/install.cr
