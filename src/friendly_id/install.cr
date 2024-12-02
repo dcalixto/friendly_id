@@ -7,11 +7,11 @@ module FriendlyId
       timestamp = Time.utc.to_s("%Y%m%d%H%M%S")
       filename = "db/migrations/#{timestamp}_create_friendly_id_slugs.sql"
 
-      File.write(filename, MIGRATION_SQL)
+      File.write(filename, migration_sql)
       puts "✓ Created migration #{filename}"
     end
 
-    private MIGRATION_SQL = <<-SQL
+    private class_getter migration_sql : String = <<-SQL
     CREATE TABLE friendly_id_slugs (
       id BIGSERIAL PRIMARY KEY,
       slug VARCHAR NOT NULL,
