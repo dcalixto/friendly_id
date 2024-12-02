@@ -14,8 +14,8 @@ module FriendlyId
         @@slug_field
       end
 
-      macro friendly_id(field)
-        @@slug_field = {{field}}
+      def self.friendly_id(field)
+        @@slug_field = field
       end
     end
 
