@@ -1,7 +1,5 @@
 require "./cli"
 require "file_utils"
-require "db"
-require "sqlite3"
 
 module FriendlyId
   class Install
@@ -9,15 +7,8 @@ module FriendlyId
       timestamp = Time.utc.to_s("%Y%m%d%H%M%S")
       filename = "db/migrations/#{timestamp}_create_friendly_id_slugs.sql"
 
-      # Create migration file
       File.write(filename, migration_sql)
       puts "✓ Created migration #{filename}"
-
-      # Execute migration
-      DB.open "sqlite3:./db/application.db" do |db|
-        db.exec migration_sql
-      end
-      puts "✓ Executed migration - friendly_id_slugs table created"
     end
 
     private class_getter migration_sql : String = <<-SQL
