@@ -2,13 +2,8 @@ module FriendlyId
   module History
     macro included
       @previous_slug : String?
-      {% if @type < FriendlyId::BaseModel %}
-      puts "Including class inherits from FriendlyId::BaseModel"
-      after_save :update_slug_history
-    {% else %}
-      raise "The including class must inherit from FriendlyId::BaseModel to use FriendlyId::History."
-    {% end %}
-  end
+      property slug_history = [] of String
+    end
 
     def slugs
       raise "ID is missing for #{self.class.name}" unless id
