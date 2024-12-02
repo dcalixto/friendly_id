@@ -2,39 +2,39 @@ require "db"
 require "db/serializable"
 
 module FriendlyId
-  module Callbacks
-    # Define callback storage
-    @@before_save_callbacks = [] of Symbol
-    @@after_save_callbacks = [] of Symbol
-
-    # Add before_save macro
-    macro before_save(method_name)
-      {% if !@type.class_vars.includes?("@@before_save_callbacks".id) %}
-        @@before_save_callbacks = [] of Symbol
-      {% end %}
-      @@before_save_callbacks << {{method_name}}
-    end
-
-    # Enhanced after_save macro
-    macro after_save(method_name)
-      {% if !@type.class_vars.includes?("@@after_save_callbacks".id) %}
-        @@after_save_callbacks = [] of Symbol
-      {% end %}
-      @@after_save_callbacks << {{method_name}}
-    end
-
-    # Run callbacks method
-    def run_callbacks
-      @@before_save_callbacks.each { |callback| self.send(callback) }
-      yield
-      @@after_save_callbacks.each { |callback| self.send(callback) }
-    end
-  end
-
   module Model
-    macro included
-      include Callbacks
+    module Callbacks
+      # Define callback storage
+      @@before_save_callbacks = [] of Symbol
+      @@after_save_callbacks = [] of Symbol
 
+      # Add before_save macro
+      macro before_save(method_name)
+        {% if !@type.class_vars.includes?("@@before_save_callbacks".id) %}
+          @@before_save_callbacks = [] of Symbol
+        {% end %}
+        @@before_save_callbacks << {{method_name}}
+      end
+
+      # Enhanced after_save macro
+      macro after_save(method_name)
+        {% if !@type.class_vars.includes?("@@after_save_callbacks".id) %}
+          @@after_save_callbacks = [] of Symbol
+        {% end %}
+        @@after_save_callbacks << {{method_name}}
+      end
+
+      # Run callbacks method
+      def run_callbacks
+        @@before_save_callbacks.each { |callback| self.send(callback) }
+        yield
+        @@after_save_callbacks.each { |callback| self.send(callback) }
+      end
+    end
+
+    macro included
+      include FriendlyId::Model::Callbacks
+      
       def save
         run_callbacks do
           perform_save
@@ -42,8 +42,7 @@ module FriendlyId
       end
     end
   end
-
-  abstract class BaseModel
+end  abstract class BaseModel
     include DB::Serializable
     include Model
 
