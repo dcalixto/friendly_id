@@ -28,7 +28,8 @@ module FriendlyId
 
     def generate_slug
       field = self.class.slug_field
-      source_value = self[field].to_s # Dynamically retrieve the field value
+      # Access the property directly using instance_variable_get
+      source_value = instance_variable_get("@#{field}").to_s
       if should_generate_new_friendly_id?(source_value)
         @previous_slug = @slug
         self.slug = normalize_friendly_id(source_value)
