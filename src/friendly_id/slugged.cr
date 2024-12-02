@@ -5,9 +5,18 @@ module FriendlyId
       @slug_changed : Bool = false
       @previous_value : String? = nil
       
+      def generate_slug
+        source_value = self.title # Default to title
+        if @previous_value != source_value
+          self.slug = normalize_friendly_id(source_value.to_s)
+          @slug_changed = true
+          @previous_value = source_value
+        end
+      end
+
       macro slug_from(field)
         def generate_slug
-          source_value = self.{{field.id}}
+          source_value = self.{{field}}
           if @previous_value != source_value
             self.slug = normalize_friendly_id(source_value.to_s)
             @slug_changed = true
@@ -16,9 +25,6 @@ module FriendlyId
         end
       end
 
-      # Default to title if no field specified
-      slug_from title
-      
       def save
         generate_slug
         super
