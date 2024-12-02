@@ -1,24 +1,24 @@
 module FriendlyId
   module Slugged
     macro included
-      @@slug_source = "title"
       property slug : String? = nil
       @slug_changed : Bool = false
       @previous_value : String? = nil
       
-      def self.slug_source
-        @@slug_source
-      end
-
-      def generate_slug
-        source_value = self.responds_to?(@@slug_source) ? self.send(@@slug_source) : ""
-        if @previous_value != source_value
-          self.slug = normalize_friendly_id(source_value.to_s)
-          @slug_changed = true
-          @previous_value = source_value
+      macro slug_from(field)
+        def generate_slug
+          source_value = self.{{field.id}}
+          if @previous_value != source_value
+            self.slug = normalize_friendly_id(source_value.to_s)
+            @slug_changed = true
+            @previous_value = source_value
+          end
         end
       end
 
+      # Default to title if no field specified
+      slug_from title
+      
       def save
         generate_slug
         super
