@@ -30,7 +30,7 @@ module FriendlyId
     # Retrieves a slug from a database, filtering by the slug field
     def self.find_by_slug(slug : String, db : DB::Database) : FriendlyId::Slug?
       begin
-        db.query_one?("SELECT * FROM slugs WHERE slug = ?", slug, as: Slug)
+        db.query_one?("SELECT * FROM friendly_id_slugs WHERE slug = ?", slug, as: Slug)
       rescue ex : DB::Error
         puts "Error querying slug: #{ex.message}"
         nil
