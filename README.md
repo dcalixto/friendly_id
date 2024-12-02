@@ -32,9 +32,8 @@ Configure FriendlyId in your application:
 > [!NOTE]
 > set a initializer # friendly_id.cr
 
-```yaml
+```crystal
 require "friendly_id"
-
 FriendlyId.configure do |config|
 config.migration_dir = "db/migrations"
 end
@@ -42,12 +41,11 @@ end
 
 Update your model's save method to include the `generate_slug` method:
 
-```yaml
+```crystal
 
 class Post
   include FriendlyId::Slugged
   friendly_id :title
-
   # Model-level slug generation
   def save
   generate_slug  # Generate the slug before saving
@@ -73,7 +71,7 @@ end
 
 Or Update your controller save method to include the `generate_slug` method:
 
-```yaml
+```crystal
 class PostsController
   def create(env)
     title = env.params.body["title"]
@@ -102,13 +100,14 @@ end
 
 Basic Slugging
 
-```yaml
+```crystal
 class Post
   include FriendlyId::Slugged
+  include FriendlyId::Finders
 
+  property id : Int64?
   property title : String
-
-
+  property slug : String?
 end
 
 post = Post.new("Hello World!")
@@ -117,7 +116,7 @@ post.slug # => "hello-world"
 
 The Slug is Update Automatically
 
-```yaml
+```crystal
 post = Post.new("Hello World!")
 post.save
 puts post.slug # => "hello-world"
@@ -125,22 +124,19 @@ puts post.slug # => "hello-world"
 post.title = "Updated Title"
 post.save
 puts post.slug # => "updated-title"
-puts post.slug_history # => ["hello-world"]
+
 ```
 
 With History Tracking
 
-> [!CAUTION]
-> Still with issues need to fix FriendlyId::History
-
-```yaml
+```crystal
 class Post
   include FriendlyId::Slugged
   include FriendlyId::History
 
-
-
+  property id : Int64?
   property title : String
+  property slug : String?
 
   def initialize(@title)
   end
@@ -157,11 +153,13 @@ post.slug_history # => ["hello-world"]
 
 Using a Custom Attribute
 
-```yaml
+```crystal
 class User
   include FriendlyId::Slugged
 
+  property id : Int64?
   property name : String
+  property slug : String?
   friendly_id :name  # Use name instead of title for slugs
 
   def initialize(@name); end
@@ -174,7 +172,13 @@ puts user.slug # => "john-doe"
 
 ## Friendly ID Support
 
-The `FriendlyId::Finders` module provides smart URL slug handling with ID fallback:
+The `FriendlyId::Finders` module provides smart URL slug handling with ID and Historical Slug fallback:
+
+### lookup records by:
+
+- Current slug
+- Numeric ID
+- Historical slugs
 
 ```crystal
 class Post
@@ -185,31 +189,46 @@ end
 
 Finding Records
 
-```yaml
-# Will find post by either slug or id
-Post.find_by_friendly_id("my-awesome-post")
-Post.find_by_friendly_id("25")
-```
-
-```yaml
-
-# Find by slug
-post = Post.find_by_friendly_id("hello-world")
-
+```crystal
+# All these will work:
+Post.find_by_friendly_id("my-awesome-post")  # Current slug
+Post.find_by_friendly_id("123")              # ID
+Post.find_by_friendly_id("old-post-slug")    # Historical slug
 # Regular find still works
 post = Post.find(1)
-
 ```
 
-Custom Slug Generation
+## Configuration
 
-```yaml
-class Post
-include FriendlyId::Slugged
-
-def normalize_friendly_id(value)
-value.downcase.gsub(/\s+/, "-")
+```crystal
+def should_generate_new_friendly_id?
+  title_changed? || slug.nil?
 end
+```
+
+```crystal
+class Post
+  include DB::Serializable
+  include FriendlyId::Slugged
+  include FriendlyId::Finders
+  include FriendlyId::History
+
+  # ... your existing code ...
+
+  def should_generate_new_friendly_id?
+    title_changed? || slug.nil?
+  end
+end
+```
+
+### Custom Slug Generation
+
+```crystal
+class Post
+  include FriendlyId::Slugged
+   def normalize_friendly_id(value)
+   value.downcase.gsub(/\s+/, "-")
+  end
 end
 ```
 
@@ -259,3 +278,7 @@ Daniel Calixto - creator and maintainer
 ## License
 
 MIT License. See LICENSE for details.
+
+```
+
+```

@@ -14,12 +14,30 @@ module FriendlyId
           find_by_id(slug_or_id.to_i64)
         end
       end
+      
+     # private def self.find_by_slug(slug : String)
+     #   query = "SELECT * FROM #{@@table_name} WHERE slug = ?"
+     #  @@db.query_one?(query, slug, as: self)
+     # end
 
-      private def self.find_by_slug(slug : String)
-        query = "SELECT * FROM #{@@table_name} WHERE slug = ?"
-        @@db.query_one?(query, slug, as: self)
+
+      def self.find_by_slug(slug : String)
+        # First try current slugs
+        result = @@db.query_one?(
+          "SELECT * FROM #{table_name} WHERE slug = ?", 
+          slug, 
+          as: self
+        )
+        
+        # If not found, try historical slugs
+        if result.nil?
+          if historical_record = FriendlyId::Slug.find_by_slug(slug)
+            result = find(historical_record.sluggable_id)
+          end
+        end
+        
+        result
       end
-
       private def self.find_by_id(id : Int64)
         query = "SELECT * FROM #{@@table_name} WHERE id = ?"
         @@db.query_one?(query, id, as: self)
