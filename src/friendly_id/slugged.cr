@@ -21,7 +21,7 @@ module FriendlyId
 
     def generate_slug
       field = self.class.slug_field
-      source_value = self[field]?.try(&.to_s) || ""
+      source_value = (respond_to?(field) ? self.send(field).to_s : "") || ""
       if should_generate_new_friendly_id?(source_value)
         @previous_slug = @slug
         self.slug = normalize_friendly_id(source_value)
