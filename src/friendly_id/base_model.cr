@@ -19,6 +19,13 @@ module FriendlyId
     end
 
     # Define macros as required (unchanged from your implementation)
+    macro before_save(method_name)
+      def save
+        {{method_name.id}}
+        super
+      end
+    end
+
     macro after_save(method_name)
       def save
         result = super
