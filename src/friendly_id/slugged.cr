@@ -64,7 +64,7 @@ module FriendlyId
     end
 
     private def create_slug_record(db : DB::Database)
-      db.exec "INSERT INTO slugs (slug, sluggable_id, sluggable_type) VALUES (?, ?, ?)",
+      db.exec "INSERT INTO friendly_id_slugs (slug, sluggable_id, sluggable_type) VALUES (?, ?, ?)",
         slug_was, id.not_nil!, self.class.name
     rescue ex : DB::Error
       handle_db_error(ex, "Error creating slug record")
