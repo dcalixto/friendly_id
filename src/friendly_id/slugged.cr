@@ -7,7 +7,18 @@ module FriendlyId
       @slug_changed : Bool = false
       @previous_value : String? = nil
       @previous_slug : String? = nil
-      @slug_field : Symbol = :title # Default to `title`
+
+      # Add class variable and class method for slug_field
+      @@slug_field : Symbol = :title
+
+      def self.slug_field
+        @@slug_field
+      end
+    end
+
+    # Define the friendly ID field dynamically with the macro
+    macro friendly_id(field)
+      @@slug_field = {{field}}
     end
 
     # Override the save method to include lifecycle steps
