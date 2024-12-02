@@ -4,30 +4,24 @@ require "file_utils"
 module FriendlyId
   class Install
     def self.run
-      FileUtils.mkdir_p(FriendlyId.config.migration_dir)
-
       timestamp = Time.utc.to_s("%Y%m%d%H%M%S")
-      filename = "#{FriendlyId.config.migration_dir}/#{timestamp}_create_friendly_id_slugs.cr"
+      filename = "db/migrations/#{timestamp}_create_friendly_id_slugs.sql"
 
-      File.write(filename, migration_content)
+      File.write(filename, MIGRATION_SQL)
+      puts "✓ Created migration #{filename}"
     end
 
-    private def self.migration_content
-      <<-CRYSTAL
-      class CreateFriendlyIdSlugs < DB::Migration
-        def change
-          create table friendly_id_slugs do
-            primary_key id : Int64
-            add slug : String, null: false
-            add sluggable_id : Int64, null: false
-            add sluggable_type : String, null: false
-            add created_at : Time, null: false, default: :now
+    private MIGRATION_SQL = <<-SQL
+    CREATE TABLE friendly_id_slugs (
+      id BIGSERIAL PRIMARY KEY,
+      slug VARCHAR NOT NULL,
+      sluggable_id BIGINT NOT NULL,
+      sluggable_type VARCHAR(50) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 
-            add_index [:sluggable_type, :sluggable_id]
-          end
-        end
-      end
-      CRYSTAL
-    end
+    CREATE INDEX index_friendly_id_slugs_on_sluggable
+    ON friendly_id_slugs (sluggable_type, sluggable_id);
+    SQL
   end
 end
