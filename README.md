@@ -172,7 +172,24 @@ user.save
 puts user.slug # => "john-doe"
 ```
 
+## Friendly ID Support
+
+The `FriendlyId::Finders` module provides smart URL slug handling with ID fallback:
+
+```crystal
+class Post
+  include FriendlyId::Finders
+end
+
+```
+
 Finding Records
+
+```yaml
+# Will find post by either slug or id
+Post.find_by_friendly_id("my-awesome-post")
+Post.find_by_friendly_id("25")
+```
 
 ```yaml
 
