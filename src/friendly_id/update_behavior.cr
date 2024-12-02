@@ -1,5 +1,4 @@
 require "db"
-require "sqlite3"
 
 module FriendlyId
   module UpdateBehavior
