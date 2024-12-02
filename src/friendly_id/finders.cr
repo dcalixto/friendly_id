@@ -20,7 +20,7 @@ module FriendlyId
           )
 
           if result.nil?
-            if historical_record = FriendlyId::Slug.find_by_slug(slug, @@db)
+            if historical_record = FriendlyId::Slug.find_by_slug(slug)
               result = find(historical_record.sluggable_id)
             end
           end
