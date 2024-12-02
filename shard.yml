@@ -1,0 +1,23 @@
+name: friendly_id
+version: 0.1.0
+
+authors:
+  - Daniel Calixto calixtodaniel@gmail.com
+
+crystal: ">= 1.0.0"
+
+description: |
+  FriendlyId for Crystal - Create human-readable URLs and slugs
+
+dependencies:
+  db:
+    github: crystal-lang/crystal-db
+  sqlite3:
+    github: crystal-lang/crystal-sqlite3
+  spectator:
+    github: icy-arctic-fox/spectator
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+scripts:
+  postinstall: crystal run lib/friendly_id/src/friendly_id/install.cr
