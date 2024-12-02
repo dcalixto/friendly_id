@@ -1,6 +1,7 @@
 module FriendlyId
   module Slugged
     include FriendlyId::Finders
+    include FriendlyId::Reflection
 
     macro included
       property slug : String? = nil
