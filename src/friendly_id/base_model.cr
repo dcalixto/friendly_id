@@ -34,52 +34,52 @@ module FriendlyId
 
     macro included
       include FriendlyId::Model::Callbacks
-      
+
       def save
         run_callbacks do
           perform_save
         end
       end
+
+      protected def perform_save
+        raise "Save not implemented"
+      end
     end
   end
-end  abstract class BaseModel
-    include DB::Serializable
-    include Model
+end
 
-    # Define ID property as nilable if needed
-    property id : Int64?
+abstract class BaseModel
+  include DB::Serializable
+  include FriendlyId::Model
 
-    # Initialize with an optional id
-    def initialize(id : Int64? = nil)
-      @id = id
+  # Define ID property as nilable if needed
+  property id : Int64?
+
+  # Initialize with an optional id
+  def initialize(id : Int64? = nil)
+    @id = id
+  end
+
+  # Ensure safe access with `not_nil!`
+  def id
+    @id.not_nil!
+  end
+
+  macro table(name)
+    @@table_name = {{name.stringify}}
+    def self.table_name
+      @@table_name
     end
+  end
 
-    # Ensure safe access with `not_nil!`
-    def id
-      @id.not_nil!
-    end
+  macro column(declaration)
+    property {{declaration}}
+  end
 
-    macro table(name)
-      @@table_name = {{name.stringify}}
-      def self.table_name
-        @@table_name
-      end
-    end
-
-    macro column(declaration)
-      property {{declaration}}
-    end
-
-    macro belongs_to(declaration, **options)
-      property {{declaration}}
-      def related_{{declaration.id}}
-        # Add custom logic for relationship resolution if necessary
-      end
-    end
-
-    # Abstract method for actual save implementation
-    protected def perform_save
-      raise "Save not implemented"
+  macro belongs_to(declaration, **options)
+    property {{declaration}}
+    def related_{{declaration.id}}
+      # Add custom logic for relationship resolution if necessary
     end
   end
 end
