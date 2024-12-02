@@ -14,8 +14,6 @@ dependencies:
     github: crystal-lang/crystal-db
   spectator:
     github: icy-arctic-fox/spectator
-development_dependencies:
-  ameba:
-    github: crystal-ameba/ameba
+
 scripts:
   postinstall: crystal run src/friendly_id/install.cr
