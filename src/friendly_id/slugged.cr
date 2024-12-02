@@ -2,27 +2,26 @@ module FriendlyId
   module Slugged
     macro included
       property slug : String?
+      @slug_changed : Bool = false
+      @slug_base : String = "title"
 
-      before_save :set_slug
-
-      def self.slug_base
-        @slug_base || "title" # Default to `title` if not set
-      end
-
-      def self.set_slug_base(base : String)
-        @slug_base = base
-      end
-
-      def slug_base_value
-        send(self.class.slug_base).to_s
+      def generate_slug
+        self.slug = normalize_friendly_id(title)
+        @slug_changed = true
       end
 
       def slug_changed?
-        @slug_changed == true
+        @slug_changed
       end
 
-      def self.find_by_friendly_id(id)
-        find_by(slug: id)
+      def self.find_by_slug(slug : String)
+        find_by(slug: slug)
+      end
+
+      # Hook into save to generate slug
+      def save
+        generate_slug if slug.nil? || title_changed?
+        super
       end
     end
 
@@ -31,10 +30,6 @@ module FriendlyId
         .gsub(/[^a-z0-9\s-]/, "")
         .gsub(/\s+/, "-")
         .strip("-")
-    end
-
-    private def set_slug
-      self.slug = normalize_friendly_id(slug_base_value)
     end
   end
 end
