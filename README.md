@@ -221,6 +221,27 @@ class Post
 end
 ```
 
+### Callbacks
+
+Built-in before_save and after_save callbacks support
+
+```crystal
+class Post
+  include FriendlyId::Model
+
+  before_save :your_method
+  after_save :another_method
+
+  def your_method
+    # Run before save
+  end
+
+  def another_method
+    # Run after save
+  end
+end
+```
+
 ### Custom Slug Generation
 
 ```crystal

@@ -2,8 +2,50 @@ require "db"
 require "db/serializable"
 
 module FriendlyId
+  module Callbacks
+    # Define callback storage
+    @@before_save_callbacks = [] of Symbol
+    @@after_save_callbacks = [] of Symbol
+
+    # Add before_save macro
+    macro before_save(method_name)
+      {% if !@type.class_vars.includes?("@@before_save_callbacks".id) %}
+        @@before_save_callbacks = [] of Symbol
+      {% end %}
+      @@before_save_callbacks << {{method_name}}
+    end
+
+    # Enhanced after_save macro
+    macro after_save(method_name)
+      {% if !@type.class_vars.includes?("@@after_save_callbacks".id) %}
+        @@after_save_callbacks = [] of Symbol
+      {% end %}
+      @@after_save_callbacks << {{method_name}}
+    end
+
+    # Run callbacks method
+    def run_callbacks
+      @@before_save_callbacks.each { |callback| self.send(callback) }
+      yield
+      @@after_save_callbacks.each { |callback| self.send(callback) }
+    end
+  end
+
+  module Model
+    macro included
+      include Callbacks
+
+      def save
+        run_callbacks do
+          perform_save
+        end
+      end
+    end
+  end
+
   abstract class BaseModel
     include DB::Serializable
+    include Model
 
     # Define ID property as nilable if needed
     property id : Int64?
@@ -16,22 +58,6 @@ module FriendlyId
     # Ensure safe access with `not_nil!`
     def id
       @id.not_nil!
-    end
-
-    # Define macros as required (unchanged from your implementation)
-    macro before_save(method_name)
-      def save
-        {{method_name.id}}
-        super
-      end
-    end
-
-    macro after_save(method_name)
-      def save
-        result = super
-        {{method_name.id}}
-        result
-      end
     end
 
     macro table(name)
@@ -52,8 +78,8 @@ module FriendlyId
       end
     end
 
-    # Implement save (still abstract, as before)
-    def save
+    # Abstract method for actual save implementation
+    protected def perform_save
       raise "Save not implemented"
     end
   end
