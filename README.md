@@ -23,11 +23,13 @@ shards install
 Configure FriendlyId in your application:
 
 > [!NOTE]
-> if your migrations path is diferent than # db/migrations
+> set a initializer # friendly_id.cr
 
 ```yaml
+require "friendly_id"
+
 FriendlyId.configure do |config|
-  config.migration_dir = "db/migrations" # Default path for migrations
+config.migration_dir = "db/migrations"
 end
 ```
 
@@ -40,9 +42,8 @@ class Post
   include FriendlyId::Slugged
 
   property title : String
+ slug_from "title"
 
-  def initialize(@title)
-  end
 end
 
 post = Post.new("Hello World!")
@@ -69,6 +70,8 @@ class Post
   include FriendlyId::Slugged
   include FriendlyId::History
 
+  slug_from "title"
+
   property title : String
 
   def initialize(@title)
@@ -91,7 +94,7 @@ class User
   include FriendlyId::Slugged
 
   property name : String
-  FriendlyId::Slugged.set_slug_base("name")
+  slug_from "name" # Use 'name' field instead of 'title'
 
   def initialize(@name); end
 end
