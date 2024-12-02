@@ -4,11 +4,6 @@ require "db/serializable"
 module FriendlyId
   module Model
     module Callbacks
-      # Define callback storage
-      @@before_save_callbacks = [] of Symbol
-      @@after_save_callbacks = [] of Symbol
-
-      # Add before_save macro
       macro before_save(method_name)
         {% if !@type.class_vars.includes?("@@before_save_callbacks".id) %}
           @@before_save_callbacks = [] of Symbol
@@ -16,13 +11,16 @@ module FriendlyId
         @@before_save_callbacks << {{method_name}}
       end
 
-      # Enhanced after_save macro
       macro after_save(method_name)
         {% if !@type.class_vars.includes?("@@after_save_callbacks".id) %}
           @@after_save_callbacks = [] of Symbol
         {% end %}
         @@after_save_callbacks << {{method_name}}
       end
+
+      # Define callback storage
+      @@before_save_callbacks = [] of Symbol
+      @@after_save_callbacks = [] of Symbol
 
       # Run callbacks method
       def run_callbacks
@@ -33,6 +31,7 @@ module FriendlyId
     end
 
     macro included
+      extend FriendlyId::Model::Callbacks
       include FriendlyId::Model::Callbacks
 
       def save
