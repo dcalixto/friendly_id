@@ -213,6 +213,21 @@ end
 end
 ```
 
+## URL Helpers
+
+To use friendly URLs in your controller, include the `FriendlyId::UrlHelper` module:
+
+```crystal
+# In your Controller
+include FriendlyId::UrlHelper
+```
+
+```crystal
+<a href="/posts/<%= friendly_path(post) %>">
+  <%= post.title %>
+</a>
+```
+
 ## Features
 
 - Slug generation from specified fields
