@@ -31,8 +31,7 @@ module FriendlyId
     rescue ex : Exception
       puts "Error generating slug: #{ex.message}"
     end
-  end
-end
+
     def should_generate_new_friendly_id?(new_value)
       @previous_value != new_value || @slug.nil?
     end
