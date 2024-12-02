@@ -7,35 +7,45 @@ module FriendlyId
       @slug_changed : Bool = false
       @previous_value : String? = nil
       @previous_slug : String? = nil
+      @slug_field : Symbol = :title # Default to `title`
+    end
 
-      before_save :store_previous_slug
-      after_save :update_slug_history
+    # Override the save method to include lifecycle steps
+    def save(db : DB::Database) : Bool
+      begin
+        store_previous_slug
+        super(db) # Assumes the including class implements a compatible save method
+        update_slug_history(db)
+        true
+      rescue ex : DB::Error
+        handle_db_error(ex, "Error saving record with slug")
+        false
+      rescue ex : Exception
+        puts "Unexpected error during save: #{ex.message}"
+        false
+      end
     end
 
     def generate_slug
-      source_value = self.title
+      field = self.class.slug_field
+      source_value = self[field].to_s # Dynamically retrieve the field value
       if should_generate_new_friendly_id?(source_value)
         @previous_slug = @slug
-        self.slug = normalize_friendly_id(source_value.to_s)
+        self.slug = normalize_friendly_id(source_value)
         @slug_changed = true
         @previous_value = source_value
       end
+    rescue ex : Exception
+      puts "Error generating slug: #{ex.message}"
     end
 
     def should_generate_new_friendly_id?(new_value)
       @previous_value != new_value || @slug.nil?
     end
 
+    # Define the friendly ID field dynamically with the macro
     macro friendly_id(field)
-      def generate_slug
-        source_value = self.{{field.id}}
-        if should_generate_new_friendly_id?(source_value)
-          @previous_slug = @slug
-          self.slug = normalize_friendly_id(source_value.to_s)
-          @slug_changed = true
-          @previous_value = source_value
-        end
-      end
+      @slug_field = {{field.stringify.id}}
     end
 
     private def normalize_friendly_id(value : String) : String
@@ -46,7 +56,45 @@ module FriendlyId
     end
 
     private def store_previous_slug
-      @previous_slug = @slug if @slug_changed
+      begin
+        @previous_slug = @slug if @slug_changed
+        puts "Stored previous slug: #{@previous_slug}" if @previous_slug
+      rescue ex : Exception
+        puts "Error storing previous slug: #{ex.message}"
+      end
+    end
+
+    private def update_slug_history(db : DB::Database)
+      return unless respond_to?(:slug_history)
+
+      current_slug_was = slug_was
+      return unless slug != current_slug_was && current_slug_was
+
+      begin
+        db.transaction do
+          slug_history << current_slug_was.to_s unless slug_history.includes?(current_slug_was)
+          create_slug_record(db) if respond_to?(:create_slug_record)
+        end
+      rescue ex : DB::Error
+        handle_db_error(ex, "Failed to update slug history")
+      end
+    end
+
+    private def create_slug_record(db : DB::Database)
+      begin
+        db.exec "INSERT INTO slugs (slug, sluggable_id, sluggable_type) VALUES (?, ?, ?)",
+          slug_was, id.not_nil!, self.class.name
+      rescue ex : DB::Error
+        handle_db_error(ex, "Error creating slug record")
+      end
+    end
+
+    private def slug_was
+      @previous_slug ||= @slug
+    end
+
+    private def handle_db_error(ex : DB::Error, context_message : String)
+      puts "#{context_message}: #{ex.message}"
     end
   end
 end

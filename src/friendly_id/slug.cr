@@ -12,7 +12,9 @@ module FriendlyId
     property sluggable_type : String
     property created_at : Time
 
-    def initialize(@slug, @sluggable_id, @sluggable_type, @id = nil, @created_at = Time.utc)
+    # def initialize(@slug, @sluggable_id, @sluggable_type, @id = nil, @created_at = Time.utc)
+    # end
+    def initialize(@slug : String, @sluggable_id : Int64, @sluggable_type : String, @id : Int64? = nil, @created_at : Time = Time.utc)
     end
 
     def self.normalize(str : String) : String
@@ -23,6 +25,16 @@ module FriendlyId
         .strip
         .gsub(/\s+/, "-")
         .gsub(/-+/, "-")
+    end
+
+    # Retrieves a slug from a database, filtering by the slug field
+    def self.find_by_slug(slug : String, db : DB::Database) : FriendlyId::Slug?
+      begin
+        db.query_one?(Slug, "SELECT * FROM slugs WHERE slug = ?", slug)
+      rescue ex : DB::Error
+        puts "Error querying slug: #{ex.message}"
+        nil
+      end
     end
   end
 end
