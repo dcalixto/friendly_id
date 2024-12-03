@@ -25,6 +25,24 @@ ALTER TABLE posts ADD COLUMN slug VARCHAR;
 shards install
 ```
 
+Generate and run the required migrations:
+
+```crystal
+crystal ../friendly_id/src/friendly_id/install.cr
+```
+
+This will create the necessary database tables and indexes for FriendlyId to work:
+
+```crystal
+CREATE TABLE friendly_id_slugs (
+  id BIGSERIAL PRIMARY KEY,
+  slug VARCHAR NOT NULL,
+  sluggable_id BIGINT NOT NULL,
+  sluggable_type VARCHAR(50) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
 ## Setup
 
 Configure FriendlyId in your application:

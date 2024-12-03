@@ -43,4 +43,4 @@ module FriendlyId
   end
 end
 
-FriendlyId::Install.run
+# FriendlyId::Install.run
