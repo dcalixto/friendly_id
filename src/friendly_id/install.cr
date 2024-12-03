@@ -1,5 +1,3 @@
-puts "Install script execution started"
-
 require "./cli"
 require "file_utils"
 
@@ -7,38 +5,26 @@ module FriendlyId
   class Install
     def self.run
       puts "Install script started"
-
       timestamp = Time.utc.to_s("%Y%m%d%H%M%S")
-      puts "Generated timestamp: #{timestamp}"
 
-      app_root = File.expand_path("../../..", __DIR__).chomp("/lib/friendly_id")
-      puts "Calculated app root: #{app_root}"
+      # Get both paths
+      shard_root = File.expand_path("../../..", __DIR__).chomp("/lib/friendly_id")
+      kemal_root = ENV["KEMAL_APP"]? || Dir.current
 
-      migrations_path = File.join(app_root, "db", "migrations")
-      puts "Target migrations path: #{migrations_path}"
+      # Create migrations in both locations
+      [shard_root, kemal_root].each do |root|
+        migrations_path = File.join(root, "db", "migrations")
 
-      unless Dir.exists?(app_root)
-        puts "❌ Error: App root directory not found: #{app_root}"
-        return
-      end
+        next unless Dir.exists?(root)
 
-      begin
-        FileUtils.mkdir_p(migrations_path)
-        puts "✓ Created or confirmed migrations directory: #{migrations_path}"
-      rescue ex : Exception
-        puts "❌ Error creating migrations directory: #{ex.message}"
-        return
-      end
-
-      filename = File.join(migrations_path, "#{timestamp}_create_friendly_id_slugs.sql")
-      puts "Target filename: #{filename}"
-
-      begin
-        File.write(filename, migration_sql)
-        puts "✓ Created migration file: #{filename}"
-      rescue ex : Exception
-        puts "❌ Error writing migration file: #{ex.message}"
-        return
+        begin
+          FileUtils.mkdir_p(migrations_path)
+          filename = File.join(migrations_path, "#{timestamp}_create_friendly_id_slugs.sql")
+          File.write(filename, migration_sql)
+          puts "✓ Created migration in: #{filename}"
+        rescue ex : Exception
+          puts "❌ Error for path #{root}: #{ex.message}"
+        end
       end
     end
 
