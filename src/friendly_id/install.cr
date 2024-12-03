@@ -5,13 +5,14 @@ module FriendlyId
   class Install
     def self.run
       timestamp = Time.utc.to_s("%Y%m%d%H%M%S")
-      app_root = ENV["PWD"]
-      migrations_path = "#{app_root}/db/migrations"
 
-      # Create migrations directory if it doesn't exist
+      # Move up from lib/friendly_id to the app root
+      app_root = File.expand_path("../../../", __DIR__)
+      migrations_path = File.join(app_root, "db", "migrations")
+
       FileUtils.mkdir_p(migrations_path)
+      filename = File.join(migrations_path, "#{timestamp}_create_friendly_id_slugs.sql")
 
-      filename = "#{migrations_path}/#{timestamp}_create_friendly_id_slugs.sql"
       File.write(filename, migration_sql)
       puts "✓ Created migration #{filename}"
     end
