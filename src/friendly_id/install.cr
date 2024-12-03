@@ -6,8 +6,8 @@ module FriendlyId
     def self.run
       timestamp = Time.utc.to_s("%Y%m%d%H%M%S")
 
-      # Move up from lib/friendly_id to the app root
-      app_root = File.expand_path("../../../", __DIR__)
+      # Ensure the correct path to the app root
+      app_root = File.expand_path("../../..", __DIR__).chomp("/lib/friendly_id")
       migrations_path = File.join(app_root, "db", "migrations")
 
       FileUtils.mkdir_p(migrations_path)
