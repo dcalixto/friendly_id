@@ -19,19 +19,18 @@ module FriendlyId
         @@slug_field = field
       end
     end
-
     def generate_slug
       field = self.class.slug_field
-      source_value = (respond_to?(field) ? self.send(field).to_s : "") || ""
+      source_value = self.responds_to?(field) ? self.send(field).to_s : ""
+      
       if should_generate_new_friendly_id?(source_value)
         @previous_slug = @slug
-        self.slug = normalize_friendly_id(source_value)
+        @slug = normalize_friendly_id(source_value)
         @slug_changed = true
         @previous_value = source_value
       end
-    rescue ex : Exception
-      puts "Error generating slug: #{ex.message}"
     end
+   
 
     def should_generate_new_friendly_id?(new_value)
       @previous_value != new_value || @slug.nil?
