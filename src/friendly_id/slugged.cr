@@ -20,8 +20,7 @@ module FriendlyId
       end
     end
     def generate_slug
-      field_name = self.class.slug_field.to_s
-      source_value = self.responds_to?(field_name) ? self.send(field_name).to_s : ""
+      source_value = self.responds_to?(:title) ? self.title.to_s : ""
   
       if should_generate_new_friendly_id?(source_value)
         @previous_slug = @slug
@@ -29,8 +28,7 @@ module FriendlyId
         @slug_changed = true
         @previous_value = source_value
       end
-    end
-    def should_generate_new_friendly_id?(new_value)
+    end    def should_generate_new_friendly_id?(new_value)
       @previous_value != new_value || @slug.nil?
     end
 
