@@ -16,4 +16,4 @@ dependencies:
     github: icy-arctic-fox/spectator
 
 scripts:
-  postinstall: crystal run src/friendly_id/install.cr
+  postinstall: crystal src/friendly_id/install.cr
