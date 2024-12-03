@@ -3,6 +3,19 @@ module FriendlyId
     macro included
       @previous_slug : String?
       property slug_history = [] of String
+
+      # Add these hooks directly in the module
+      def before_update
+        @previous_slug = slug if id
+      end
+
+      def before_save
+        update_slug_history
+      end
+
+      def after_save
+        create_slug_record
+      end
     end
 
     def slugs
