@@ -12,9 +12,19 @@ module FriendlyId
     property sluggable_type : String
     property created_at : Time
 
-    # def initialize(@slug, @sluggable_id, @sluggable_type, @id = nil, @created_at = Time.utc)
-    # end
-    def initialize(@slug : String, @sluggable_id : Int64, @sluggable_type : String, @id : Int64? = nil, @created_at : Time = Time.utc)
+    def initialize(@slug : String, @sluggable_id : Int64, @sluggable_type : String, @created_at : Time = Time.utc)
+    end
+
+    def self.where(conditions)
+      query = "SELECT * FROM friendly_id_slugs WHERE sluggable_id = ? AND sluggable_type = ?"
+      @@db.query_all(query, conditions[:sluggable_id], conditions[:sluggable_type], as: self)
+    end
+
+    def self.create!(slug : String, sluggable_id : Int64, sluggable_type : String)
+      @@db.exec(
+        "INSERT INTO friendly_id_slugs (slug, sluggable_id, sluggable_type, created_at) VALUES (?, ?, ?, ?)",
+        slug, sluggable_id, sluggable_type, Time.utc
+      )
     end
 
     def self.normalize(str : String) : String

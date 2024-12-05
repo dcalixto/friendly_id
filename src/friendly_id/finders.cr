@@ -11,26 +11,20 @@ module FriendlyId
         end
       end
 
-      def self.find_by_slug(slug : String)
-        begin
-          result = @@db.query_one?(
-            "SELECT * FROM posts WHERE slug = ?",
-            slug,
-            as: self
-          )
-
-          if result.nil?
-            if historical_record = FriendlyId::Slug.find_by_slug(slug, @@db)
-              result = find(historical_record.sluggable_id)
-            end
-          end
-
-          result
-        rescue ex : DB::Error
-          puts "Database error during find_by_slug: #{ex.message}"
-          nil
-        end
-      end
+    # Use self.db instead of @@db in your queries
+def self.find_by_slug(slug : String)
+  begin
+    result = self.db.query_one?(
+      "SELECT * FROM posts WHERE slug = ?",
+      slug,
+      as: self
+    )
+    # Rest of your method...
+  rescue ex : DB::Error
+    puts "Database error during find_by_slug: #{ex.message}"
+    nil
+  end
+end
     end
   end
 end
