@@ -2,7 +2,7 @@
 
 A Crystal shard for creating human-readable URLs and slugs. FriendlyId lets you create pretty URLs and slugs for your resources, with support for history tracking and customization.
 
-![Crystal Test](https://github.com/dcalixto/friendly_id/actions/workflows/crystal-test.yml/badge.svg?branch=master)
+[![Crystal Test](https://github.com/dcalixto/friendly_id/actions/workflows/crystal-test.yml/badge.svg?branch=master)](https://github.com/dcalixto/friendly_id/actions/workflows/crystal-test.yml)
 
 ## Installation
 
