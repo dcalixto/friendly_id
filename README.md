@@ -2,7 +2,7 @@
 
 A Crystal shard for creating human-readable URLs and slugs. FriendlyId lets you create pretty URLs and slugs for your resources, with support for history tracking and customization.
 
-![Build Status](https://1acb-2804-1b1-c802-c90c-2e6c-3569-397e-7ea/job/friendly_id/badge/icon)
+![Build Status](https://1acb-2804-1b1-c802-c90c-2e6c-3569-397e-7ead.ngrok-free.app/buildStatus/icon?job=friendly_id&style=flat)
 
 ## Installation
 
