@@ -3,7 +3,7 @@ require "spectator"
 Spectator.describe FriendlyId do
   describe "slug generation" do
     let(post) do
-      created_post = Post.create!(title: "Hello World", body: "Content", user_id: 1_i64)
+      created_post = Post.new(title: "Hello World", body: "Content", user_id: 1_i64)
       created_post.save
       created_post
     end

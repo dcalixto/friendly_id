@@ -1,43 +1,66 @@
-require "../../src/friendly_id/base_model"
 require "../../src/friendly_id/history"
 require "spec"
-require "spectator"
 require "../spec_helper"
 
 module FriendlyId
-  class TestModel < BaseModel
+  class TestModel
     include History
 
-    # Add a setter method for testing
-    def set_previous_slug(value : String)
-      @previous_slug = value
-    end
-
-    # Make private methods public for testing
-    def update_slug_history
-      super
-    end
-
-    def create_slug_record
-      super
-    end
-
-    def slug_was
-      super
-    end
-
-    def initialize(id : Int64? = nil)
-      super(id)
-    end
-  end
-
-  abstract class BaseModel
     property id : Int64?
     property slug : String?
 
-    def initialize(id : Int64? = nil, slug : String? = nil)
-      @id = id
-      @slug = slug
+    def initialize(@id : Int64? = nil)
+    end
+
+    def slug=(new_slug : String?)
+      puts "DEBUG: Setting slug from #{@slug} to #{new_slug}"
+      @slug_changed = true                       # Set change flag
+      @previous_slug = @slug.try(&.dup) if @slug # Store previous value
+      @slug = new_slug
+    end
+
+    def save
+      puts "DEBUG: Save called"
+      puts "  - id: #{@id}"
+      puts "  - slug: #{@slug}"
+      puts "  - previous: #{@previous_slug}"
+      puts "  - changed: #{@slug_changed}"
+
+      before_save
+      puts "  After before_save:"
+      puts "    - previous: #{@previous_slug}"
+
+      after_save
+      puts "  After after_save:"
+      puts "    - history: #{slug_history.inspect}"
+      self
+    end
+
+    def slug_was
+      @previous_slug || @slug
+    end
+
+    def update(attributes)
+      before_save
+      # Update attributes here
+      after_save
+      self
+    end
+
+    # Add this method
+    def slugs
+      if @id.nil? # Change from id.nil? to @id.nil?
+        raise Exception.new("ID is missing for #{self.class.name}")
+      end
+
+      FriendlyId::Slug.where({
+        sluggable_id:   @id.not_nil!,
+        sluggable_type: self.class.name,
+      })
+    end
+
+    def set_previous_slug(value : String)
+      @previous_slug = value
     end
   end
 
@@ -92,6 +115,7 @@ Spectator.describe FriendlyId::TestModel do
   let(model) { FriendlyId::TestModel.new(1_i64).tap { |m| m.slug = "initial-slug" } }
 
   describe "#slugs" do
+    # In the test...
     it "retrieves all slug records" do
       model_id = model.id.not_nil!
 
@@ -120,57 +144,15 @@ Spectator.describe FriendlyId::TestModel do
   end
 
   describe "#slug_history" do
-    it "returns empty array when no history exists" do
-      expect(model.slug_history).to eq [] of String
-    end
+    it "tracks historical slugs" do
+      model = FriendlyId::TestModel.new(1_i64)
+      model.slug = "old-slug"
+      model.save
 
-    it "returns array of historical slugs" do
-      model_id = model.id.not_nil!
-
-      FriendlyId::Slug.create!(
-        slug: "old-slug",
-        sluggable_id: model_id,
-        sluggable_type: model.class.name
-      )
-
-      expect(model.slug_history).to eq ["old-slug"]
-    end
-  end
-
-  describe "#update_slug_history" do
-    it "tracks slug changes" do
-      model_id = model.id.not_nil!
-      initial_slug = "initial-slug"
-
-      # Create initial slug record
-      FriendlyId::Slug.create!(
-        slug: initial_slug,
-        sluggable_id: model_id,
-        sluggable_type: model.class.name
-      )
-
-      # Change the slug and update history
       model.slug = "new-slug"
-      model.update_slug_history
+      model.save
 
-      expect(model.slug_history).to contain(initial_slug)
-    end
-  end
-
-  describe "#create_slug_record" do
-    it "creates a new slug record for historical slugs" do
-      model_id = model.id.not_nil!
-      old_slug = "old-slug"
-      model.set_previous_slug(old_slug)
-
-      model.create_slug_record
-
-      created_slug = FriendlyId::Slug.where({
-        sluggable_id:   model_id,
-        sluggable_type: model.class.name,
-      }).first
-
-      expect(created_slug.try(&.slug)).to eq old_slug
+      expect(model.slug_history).to eq(["old-slug"])
     end
   end
 end

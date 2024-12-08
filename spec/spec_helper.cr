@@ -3,7 +3,7 @@ require "spectator"
 require "db"
 require "sqlite3"
 require "../src/friendly_id"
-require "../src/friendly_id/base_model"
+
 require "../src/friendly_id/slugged"
 require "../src/friendly_id/history"
 require "../src/friendly_id/has_many"
@@ -80,7 +80,7 @@ Spectator.configure do |config|
 end
 
 # models/post.cr
-class Post < FriendlyId::BaseModel
+class Post
   include FriendlyId::Slugged
   include FriendlyId::History
 

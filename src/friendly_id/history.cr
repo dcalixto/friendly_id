@@ -2,56 +2,39 @@ module FriendlyId
   module History
     macro included
       @previous_slug : String?
+      @slug_changed : Bool = false
       property slug_history = [] of String
 
-      # Add these hooks directly in the module
-      def before_update
-        @previous_slug = slug if id
-      end
-
       def before_save
-        update_slug_history
+        puts "DEBUG: before_save"
+        puts "  - current slug: #{@slug}"
+        puts "  - previous: #{@previous_slug}"
+        # Don't overwrite previous_slug here
       end
 
       def after_save
-        create_slug_record
+        puts "DEBUG: after_save"
+        puts "  - current slug: #{@slug}"
+        puts "  - previous: #{@previous_slug}"
+
+        if @slug_changed && @previous_slug && @previous_slug != @slug
+          store_slug_history
+        end
+        @slug_changed = false
       end
     end
 
-    def slugs
-      return [] of String if id.nil?
-      FriendlyId::Slug.where({sluggable_id: id.not_nil!, sluggable_type: self.class.name})
-    end
-
-    def slug_history
-      return [] of String if id.nil?
-      slugs.map(&.slug)
-    end
-
-    private def create_slug_record
-      return if id.nil?
-      old_slug = slug_was
-      return if old_slug.nil? || slug_history.includes?(old_slug)
+    private def store_slug_history
+      return if @id.nil? || @previous_slug.nil?
 
       FriendlyId::Slug.create!(
-        slug: old_slug,
-        sluggable_id: id.not_nil!,
+        slug: @previous_slug.not_nil!,
+        sluggable_id: @id.not_nil!,
         sluggable_type: self.class.name
       )
-      @slug_history << old_slug
-    end
 
-    private def update_slug_history
-      return if id.nil?
-      current_slug_was = slug_was
-      return unless slug != current_slug_was && current_slug_was
-
-      @slug_history << current_slug_was.to_s unless @slug_history.includes?(current_slug_was)
-      create_slug_record
-    end
-
-    private def slug_was
-      @previous_slug ||= @slug
+      @slug_history << @previous_slug.not_nil!
+      puts "DEBUG: Stored in history: #{@previous_slug}"
     end
   end
 end

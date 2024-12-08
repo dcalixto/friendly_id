@@ -2,6 +2,8 @@
 
 A Crystal shard for creating human-readable URLs and slugs. FriendlyId lets you create pretty URLs and slugs for your resources, with support for history tracking and customization.
 
+[![Build Status](https://travis-ci.com/<your-username>/<your-repo>.svg?branch=main)](https://travis-ci.com/<your-username>/<your-repo>)
+
 ## Installation
 
 1. Add the dependency to your `shard.yml`:

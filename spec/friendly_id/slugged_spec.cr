@@ -5,12 +5,16 @@ class TestSluggedModel
 
   @slug_changed : Bool = false
 
+  def title
+    base_value
+  end
+
   def base_value
     "Test Value"
   end
 
   def set_slug
-    super
+    generate_slug
   end
 end
 
@@ -47,10 +51,10 @@ describe FriendlyId::Slugged do
     end
   end
 
-  describe "#set_slug" do
-    it "sets slug from base_value" do
+  describe "#generate_slug" do
+    it "generates slug from title" do
       model = TestSluggedModel.new
-      model.set_slug
+      model.generate_slug
       model.slug.should eq("test-value")
     end
   end

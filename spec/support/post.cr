@@ -1,4 +1,4 @@
-class Post < FriendlyId::BaseModel
+class Post
   include FriendlyId::Slugged
   include FriendlyId::History
 
@@ -20,10 +20,28 @@ class Post < FriendlyId::BaseModel
   end
 
   def save
+    before_save
     generate_slug
     TestDB.database.exec "INSERT INTO posts (title, body, user_id, slug) VALUES (?, ?, ?, ?)",
       @title, @body, @user_id, @slug
     @id = TestDB.database.scalar("SELECT last_insert_rowid()").as(Int64)
+    after_save
+    self
+  end
+
+  def update!(title : String)
+    # Store old slug before any changes
+    old_slug = @slug.try(&.dup)
+    @slug_changed = true # Add this line
+
+    before_save
+    @title = title
+    generate_slug
+
+    TestDB.database.exec "UPDATE posts SET title = ?, slug = ? WHERE id = ?",
+      @title, @slug, @id
+
+    after_save
     self
   end
 

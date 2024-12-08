@@ -35,11 +35,15 @@ module FriendlyId
       @previous_value != new_value || @slug.nil?
     end
 
-    private def normalize_friendly_id(value : String) : String
+    def normalize_friendly_id(value : String) : String
       value.downcase
         .gsub(/[^a-z0-9\s-]/, "")
         .gsub(/\s+/, "-")
         .strip("-")
+    end
+
+    def slug_changed? : Bool
+      @slug_changed
     end
 
     private def store_previous_slug

@@ -1,4 +1,4 @@
-class User < FriendlyId::BaseModel
+class User
   include FriendlyId::HasMany
 
   has_many :posts
