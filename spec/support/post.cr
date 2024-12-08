@@ -30,9 +30,9 @@ class Post
   end
 
   def update!(title : String)
-    # Store old slug before any changes
-    old_slug = @slug.try(&.dup)
-    @slug_changed = true # Add this line
+    # Store the previous slug before making any changes
+    @previous_slug = @slug.try(&.dup)
+    @slug_changed = true
 
     before_save
     @title = title
