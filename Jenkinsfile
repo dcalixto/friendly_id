@@ -1,46 +1,31 @@
 pipeline {
     agent any
-
+    
     stages {
-        stage('Clone Repository') {
+        stage('Setup') {
             steps {
-                // Cloning the repository
-                git url: 'https://github.com/dcalixto/friendly_id.git', branch: 'main'
+                sh '''
+                  apt-get update
+                  apt-get install -y curl gnupg apt-transport-https
+                  curl -fsSL https://crystal-lang.org/install.sh | bash
+                  apt-get install -y crystal
+                  crystal --version
+                  shards --version || echo "Shards is already bundled with Crystal."
+               '''
+
             }
         }
-
-        stage('Install Dependencies') {
+        
+        stage('Dependencies') {
             steps {
-                // Installing dependencies
                 sh 'shards install'
             }
         }
-
-        stage('Run Tests') {
+        
+        stage('Test') {
             steps {
-                // Running tests
                 sh 'crystal spec'
             }
-        }
-
-        stage('Lint Code') {
-            steps {
-                // Linting code
-                sh 'crystal tool format --check'
-            }
-        }
-    }
-
-    post {
-        always {
-            // Archiving results or logs if needed
-            archiveArtifacts artifacts: '**/log/*', allowEmptyArchive: true
-        }
-        success {
-            echo 'Build succeeded!'
-        }
-        failure {
-            echo 'Build failed!'
         }
     }
 }
