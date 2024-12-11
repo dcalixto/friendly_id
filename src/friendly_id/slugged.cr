@@ -37,14 +37,30 @@ module FriendlyId
 
     def normalize_friendly_id(value : String) : String
       normalized = value
-        .gsub(/[^\w\s-]/, "") # Remove non-word characters except spaces and hyphens
-        .gsub(/\s+/, "-")     # Replace spaces with hyphens
-        .gsub(/-+/, "-")      # Replace multiple hyphens with a single hyphen
-        .downcase             # Convert to lowercase
-        .strip                # Remove leading/trailing hyphens or spaces
 
+        .downcase                        # Convert to lowercase first
+        .gsub(/['`]/, "")                # Remove apostrophes
+        .gsub(/\s*[^A-Za-z0-9]\s*/, "-") # Replace non-alphanumeric with single hyphen
+        .gsub(/\A-+|-+\z/, "")           # Remove leading/trailing hyphens
+        .gsub(/-{2,}/, "-")              # Replace multiple hyphens with single hyphen
+
+      # Handle common Unicode characters
+      normalized = normalized
+        .gsub('ä', "ae")
+        .gsub('ö', "oe")
+        .gsub('ü', "ue")
+        .gsub('ß', "ss")
+        .gsub(/[éèêë]/, "e")
+        .gsub(/[àâäáã]/, "a")
+        .gsub(/[ìîï]/, "i")
+        .gsub(/[óôöò]/, "o")
+        .gsub(/[ùûü]/, "u")
+        .gsub(/[ý]/, "y")
+        .gsub(/[ñ]/, "n")
+
+      # Truncate if needed
       if normalized.size > 250
-        normalized[0...250].rstrip("-") + "..." # Trim and append ellipsis
+        normalized[0...250].rstrip("-")
       else
         normalized
       end
