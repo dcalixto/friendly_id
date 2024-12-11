@@ -29,22 +29,24 @@ module FriendlyId
 
     def self.normalize(str : String) : String
       str.downcase
-        .tr("àáâãäçèéêëìíîïñòóôõöùúûüýÿ",
-          "aaaaaceeeeiiiinooooouuuuyy")
-        .gsub(/[^a-z0-9\s-]/, "")
+
+        .tr("àáâãäçèéêëìíîïñòóôõöùúûüýÿ", "aaaaaceeeeiiiinooooouuuuyy")
+        .gsub(/[^a-z0-9\s-]/, "") # Remove quotes and special chars
         .strip
-        .gsub(/\s+/, "-")
-        .gsub(/-+/, "-")
+
+        .gsub(/\s+/, "-") # Replace spaces with hyphens
+        .gsub(/-+/, "-")  # Remove duplicate hyphens
     end
 
     # Retrieves a slug from a database, filtering by the slug field
     def self.find_by_slug(slug : String, db : DB::Database) : FriendlyId::Slug?
-      begin
-        db.query_one?("SELECT * FROM friendly_id_slugs WHERE slug = ?", slug, as: Slug)
-      rescue ex : DB::Error
-        puts "Error querying slug: #{ex.message}"
-        nil
-      end
+      db.query_one?(
+        "SELECT * FROM friendly_id_slugs WHERE slug = ? ORDER BY created_at DESC LIMIT 1",
+        slug,
+        as: Slug
+      )
+    rescue ex : DB::Error
+      nil
     end
   end
 end
