@@ -19,7 +19,6 @@ module FriendlyId
         @@slug_field = field
       end
     end
-
     def generate_slug
       source_value = self.responds_to?(:title) ? self.title.to_s : ""
 
@@ -37,19 +36,19 @@ module FriendlyId
 
     def normalize_friendly_id(value : String) : String
       normalized = value
+        .gsub(/[^\w\s-]/, "") # Remove all non-word chars except spaces and hyphens
+        .gsub(/\s+/, "-")     # Replace spaces with hyphens
+        .gsub(/-+/, "-")      # Replace multiple hyphens with single hyphen
         .downcase
-        .gsub(/[^a-z0-9]+/, "-") # Replace any non-alphanumeric characters with a single dash
-        .gsub(/-{2,}/, "-")      # Replace multiple consecutive dashes with a single dash
-        .strip("-")              # Remove leading/trailing dashes
 
-      # Truncate to 250 chars and add ellipsis if needed
+        .strip
+
       if normalized.size > 250
         normalized[0...250].rstrip("-") + "..."
       else
         normalized
       end
     end
-
     def slug_changed? : Bool
       @slug_changed
     end
