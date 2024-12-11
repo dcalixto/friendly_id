@@ -10,8 +10,6 @@ module FriendlyId
     property sluggable_type : String
     property created_at : Time
 
-    class_property db : DB::Database
-
     def initialize(@slug : String, @sluggable_id : Int64, @sluggable_type : String, @created_at : Time = Time.utc)
     end
 
@@ -39,15 +37,30 @@ module FriendlyId
       false
     end
 
-    def self.normalize(str : String) : String
-      str.downcase
-        .tr("àáâãäçèéêëìíîïñòóôõöùúûüýÿ", "aaaaaceeeeiiiinooooouuuuyy")
-        .gsub(/["']/, "")         # Strip quotes
-        .gsub(/[^a-z0-9\s-]/, "") # Remove non-alphanumeric chars
-        .strip                    # Remove leading/trailing whitespace
-        .gsub(/\s+/, "-")         # Replace whitespace with single hyphen
-        .gsub(/-{2,}/, "-")       # Collapse multiple hyphens
-        .gsub(/^-|-$/, "")        # Remove leading/trailing hyphens
+    def self.normalize(str : String, separator : String = "-", preserve_case : Bool = false, locale : String? = nil) : String
+      result = str.clone
+
+      # Transliterate special characters
+      result = result.tr("àáâãäçèéêëìíîïñòóôõöùúûüýÿ", "aaaaaceeeeiiiinooooouuuuyy")
+
+      # Strip quotes and non-alphanumeric chars except dashes and underscores
+      result = result.gsub(/["']/, "")
+        .gsub(/[^a-zA-Z0-9\s\-_]/, "")
+        .strip
+
+      # Handle case preservation
+      result = result.downcase unless preserve_case
+
+      # Replace whitespace with separator
+      result = result.gsub(/\s+/, separator)
+
+      # Collapse multiple separators
+      result = result.gsub(/#{separator}{2,}/, separator)
+
+      # Remove leading/trailing separators
+      result = result.gsub(/^#{separator}|#{separator}$/, "")
+
+      result
     end
 
     def self.find_by_slug(slug : String) : FriendlyId::Slug?
