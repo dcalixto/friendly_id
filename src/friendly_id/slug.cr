@@ -30,13 +30,13 @@ module FriendlyId
     def self.normalize(str : String) : String
       str.downcase
         .tr("àáâãäçèéêëìíîïñòóôõöùúûüýÿ", "aaaaaceeeeiiiinooooouuuuyy")
-        .gsub(/["']/, "")         # Remove quotes first
-        .gsub(/[^a-z0-9\s-]/, "") # Remove remaining special characters
-        .strip
 
-        .gsub(/\s+/, "-")   # Convert spaces to hyphens
-        .gsub(/-{2,}/, "-") # Collapse multiple hyphens
-        .gsub(/^-|-$/, "")  # Remove leading/trailing hyphens
+        .gsub(/["']/, "")         # Strip quotes
+        .gsub(/[^a-z0-9\s-]/, "") # Remove non-alphanumeric chars
+        .strip                    # Remove leading/trailing whitespace
+        .gsub(/\s+/, "-")         # Replace whitespace with single hyphen
+        .gsub(/-{2,}/, "-")       # Collapse multiple hyphens
+        .gsub(/^-|-$/, "")        # Remove leading/trailing hyphens
     end
 
     # Retrieves a slug from a database, filtering by the slug field
