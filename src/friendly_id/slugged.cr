@@ -36,10 +36,18 @@ module FriendlyId
     end
 
     def normalize_friendly_id(value : String) : String
-      value.downcase
-        .gsub(/[^a-z0-9\s-]/, "")
-        .gsub(/\s+/, "-")
-        .strip("-")
+      normalized = value
+        .downcase
+        .gsub(/[^a-z0-9]+/, "-") # Replace any non-alphanumeric characters with a single dash
+        .gsub(/-{2,}/, "-")      # Replace multiple consecutive dashes with a single dash
+        .strip("-")              # Remove leading/trailing dashes
+
+      # Truncate to 250 chars and add ellipsis if needed
+      if normalized.size > 250
+        normalized[0...250].rstrip("-") + "..."
+      else
+        normalized
+      end
     end
 
     def slug_changed? : Bool
