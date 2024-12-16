@@ -25,10 +25,9 @@ jobs:
         env:
           GIST_ID: ${{ secrets.GIST_ID }}
         run: |
-          gh gist get $GIST_ID > previous_clones.json
+          gh gist view $GIST_ID > previous_clones.json
           jq -s '.[0] * .[1]' previous_clones.json latest_clones.json > clone.json
           gh gist edit $GIST_ID clone.json
-
       - name: Push Updated Stats
         run: |
           gh api -X PUT repos/${{ github.repository }}/traffic/clones --input clone.json
