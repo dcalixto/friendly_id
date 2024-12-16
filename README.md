@@ -4,10 +4,6 @@ A Crystal shard for creating human-readable URLs and slugs. FriendlyId lets you 
 
 [![Crystal Test](https://github.com/dcalixto/friendly_id/actions/workflows/crystal-test.yml/badge.svg?branch=master)](https://github.com/dcalixto/friendly_id/actions/workflows/crystal-test.yml)
 
-[![Commits](https://img.shields.io/github/commit-activity/y/dcalixto/friendly_id.svg?label=Commits&colorA=004d99&colorB=0073e6)](https://github.com/dcalixto/friendly_id/commits/master/)
-
-[![Downloads](https://img.shields.io/gem/dt/friendly_id.svg?label=Downloads&colorA=004d99&colorB=0073e6)](https://github.com/traffic/clones/total?dcalixto=&friendly_id=&type=count&label=clones-total)
-
 ## Installation
 
 1. Add the dependency to your `shard.yml`:
