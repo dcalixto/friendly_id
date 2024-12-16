@@ -25,7 +25,7 @@ module FriendlyId
 
       if should_generate_new_friendly_id?(source_value)
         @previous_slug = @slug
-        @slug = normalize_friendly_id(source_value)
+        @slug = FriendlyId::SlugGenerator.parameterize(source_value)
         @slug_changed = true
         @previous_value = source_value
       end
@@ -33,37 +33,6 @@ module FriendlyId
 
     def should_generate_new_friendly_id?(new_value)
       @previous_value != new_value || @slug.nil?
-    end
-
-    def normalize_friendly_id(value : String) : String
-      normalized = value
-
-        .downcase                        # Convert to lowercase first
-        .gsub(/['`]/, "")                # Remove apostrophes
-        .gsub(/\s*[^A-Za-z0-9]\s*/, "-") # Replace non-alphanumeric with single hyphen
-        .gsub(/\A-+|-+\z/, "")           # Remove leading/trailing hyphens
-        .gsub(/-{2,}/, "-")              # Replace multiple hyphens with single hyphen
-
-      # Handle common Unicode characters
-      normalized = normalized
-        .gsub('ä', "ae")
-        .gsub('ö', "oe")
-        .gsub('ü', "ue")
-        .gsub('ß', "ss")
-        .gsub(/[éèêë]/, "e")
-        .gsub(/[àâäáã]/, "a")
-        .gsub(/[ìîï]/, "i")
-        .gsub(/[óôöò]/, "o")
-        .gsub(/[ùûü]/, "u")
-        .gsub(/[ý]/, "y")
-        .gsub(/[ñ]/, "n")
-
-      # Truncate if needed
-      if normalized.size > 250
-        normalized[0...250].rstrip("-")
-      else
-        normalized
-      end
     end
 
     def slug_changed? : Bool

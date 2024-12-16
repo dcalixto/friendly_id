@@ -17,8 +17,8 @@ module FriendlyId
         "hello   world".to_slug.should eq("hello-world")
       end
 
-      it "removes special characters" do
-        "hello@#$%^&*()world".to_slug.should eq("helloworld")
+      it ".normalize removes special characters" do
+        "hello@#$%^&*()world".to_slug.should eq("hello-world")
       end
 
       it "handles empty string" do

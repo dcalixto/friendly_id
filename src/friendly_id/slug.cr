@@ -4,6 +4,7 @@ require "db/serializable"
 module FriendlyId
   class Slug
     include DB::Serializable
+
     property id : Int64?
     property slug : String
     property sluggable_id : Int64
@@ -13,6 +14,7 @@ module FriendlyId
     def initialize(@slug : String, @sluggable_id : Int64, @sluggable_type : String, @created_at : Time = Time.utc)
     end
 
+    # Retrieve slugs based on conditions
     def self.where(conditions) : Array(Slug)
       query = <<-SQL
         SELECT * FROM friendly_id_slugs 
@@ -24,6 +26,7 @@ module FriendlyId
       [] of Slug
     end
 
+    # Create a new slug record
     def self.create!(slug : String, sluggable_id : Int64, sluggable_type : String) : Bool
       query = <<-SQL
         INSERT INTO friendly_id_slugs 
@@ -37,32 +40,12 @@ module FriendlyId
       false
     end
 
+    # Generate a normalized slug using the new SlugGenerator
     def self.normalize(str : String, separator : String = "-", preserve_case : Bool = false, locale : String? = nil) : String
-      result = str.clone
-
-      # Transliterate special characters
-      result = result.tr("àáâãäçèéêëìíîïñòóôõöùúûüýÿ", "aaaaaceeeeiiiinooooouuuuyy")
-
-      # Strip quotes and non-alphanumeric chars except dashes and underscores
-      result = result.gsub(/["']/, "")
-        .gsub(/[^a-zA-Z0-9\s\-_]/, "")
-        .strip
-
-      # Handle case preservation
-      result = result.downcase unless preserve_case
-
-      # Replace whitespace with separator
-      result = result.gsub(/\s+/, separator)
-
-      # Collapse multiple separators
-      result = result.gsub(/#{separator}{2,}/, separator)
-
-      # Remove leading/trailing separators
-      result = result.gsub(/^#{separator}|#{separator}$/, "")
-
-      result
+      FriendlyId::SlugGenerator.parameterize(str, separator, preserve_case, locale)
     end
 
+    # Find a slug by its value
     def self.find_by_slug(slug : String) : FriendlyId::Slug?
       query = <<-SQL
         SELECT * FROM friendly_id_slugs 
@@ -78,6 +61,7 @@ module FriendlyId
   end
 end
 
+# Extend String to support slug generation
 class String
   def to_slug : String
     FriendlyId::Slug.normalize(self)

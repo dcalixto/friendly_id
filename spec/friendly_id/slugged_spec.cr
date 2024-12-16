@@ -3,7 +3,9 @@ require "../spec_helper"
 class TestSluggedModel
   include FriendlyId::Slugged
 
-  @slug_changed : Bool = false
+  def normalize_friendly_id(value)
+    FriendlyId::SlugGenerator.parameterize(value)
+  end
 
   def title
     base_value
@@ -30,9 +32,9 @@ describe FriendlyId::Slugged do
       model.normalize_friendly_id("hello world").should eq("hello-world")
     end
 
-    it "removes special characters" do
+    it "#normalize_friendly_id removes special characters" do
       model = TestSluggedModel.new
-      model.normalize_friendly_id("hello@#$%^&*world!").should eq("helloworld")
+      model.normalize_friendly_id("hello@#$%^&*world!").should eq("hello-world")
     end
 
     it "handles multiple spaces" do
