@@ -1,0 +1,48 @@
+name: Clone Stats and Badge Update
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Run daily at midnight
+  workflow_dispatch:
+
+jobs:
+  update-stats-and-badge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          echo "$GH_TOKEN" | gh auth login --with-token
+
+      - name: Get Latest Clone Count
+        run: |
+          gh api repos/${{ github.repository }}/traffic/clones > latest_clones.json
+
+      - name: Update Historical Data
+        env:
+          GIST_ID: ${{ secrets.GIST_ID }}
+        run: |
+          gh gist get $GIST_ID > previous_clones.json
+          jq -s '.[0] * .[1]' previous_clones.json latest_clones.json > clone.json
+          gh gist edit $GIST_ID clone.json
+
+      - name: Push Updated Stats
+        run: |
+          gh api -X PUT repos/${{ github.repository }}/traffic/clones --input clone.json
+
+      - name: Update README Badge
+        run: |
+          CLONE_COUNT=$(cat latest_clones.json | jq '.count')
+          BADGE_URL="https://img.shields.io/badge/Clones-${CLONE_COUNT}-brightgreen"
+          sed -i "s|!\[Clone Count\]([^)]*)|![Clone Count](${BADGE_URL})|" README.md
+
+      - name: Commit and Push Badge Update
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add README.md
+          git commit -m "Update clone count badge"
+          git push
