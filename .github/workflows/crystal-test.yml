@@ -1,30 +1,28 @@
 name: Crystal Test
 
 on:
-  workflow_dispatch:
   push:
-    branches: ["**"]
+    branches: [master]
   pull_request:
-    branches: ["**"]
+    branches: [master]
 
 jobs:
-  crystal_test:
-    name: Crystal Test
+  test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        crystal-version: ["1.9", "1.10"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Set up Crystal
+      - name: Install SQLite deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsqlite3-dev
+
+      - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
-        with:
-          crystal: ${{ matrix.crystal-version }}
 
       - name: Install dependencies
         run: shards install
 
-      - name: Run specs
+      - name: Run tests
         run: crystal spec
