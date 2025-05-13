@@ -1,5 +1,8 @@
 module FriendlyId
   module Finders
+    # List of all possible script prefixes we use
+    SCRIPT_PREFIXES = ["cjk", "cyr", "dev", "ara", "heb", "tha", "gre", "arm", "geo", "oth"]
+
     macro included
       def self.find_by_friendly_id(id : String)
         # Try to parse as integer first
@@ -7,12 +10,15 @@ module FriendlyId
 
         if id_as_int
           find_by_id(id_as_int)
-        elsif id.starts_with?("cjk-")
-          # This is a Base64 encoded multilingual slug
+        elsif SCRIPT_PREFIXES.any? { |prefix| id.starts_with?("#{prefix}-") }
+          # This is an encoded non-Latin script slug
+          # Extract the prefix and encoded part
+          prefix = id.split("-").first
+          encoded_part = id.sub("#{prefix}-", "")
+
           # We need to search by pattern matching since exact match might not work
           # due to potential truncation in the slug generation
-          encoded_part = id.sub("cjk-", "")
-          find_by_slug_pattern("cjk-#{encoded_part}%")
+          find_by_slug_pattern("#{prefix}-#{encoded_part}%")
         else
           find_by_slug(id)
         end
